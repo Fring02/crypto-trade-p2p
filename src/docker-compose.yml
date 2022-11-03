@@ -1,0 +1,253 @@
+version: '3.4'
+
+services:
+  api-gateway:
+    image: ${DOCKER_REGISTRY-}api-gateway
+    container_name: api-gateway
+   # depends_on:
+   #   - users_db
+   #   - users-migrator
+   #   - auth-api
+    build:
+      context: api-gateway
+      dockerfile: ./Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - "AuthSettings:AuthPath=http://auth-api:80"
+
+
+  users_db:
+    image: postgres
+    container_name: users_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=users_db
+      - PGUSER=postgres
+
+  users-migrator:
+    image: ${DOCKER_REGISTRY-}users-migrator
+    container_name: users-migrator
+    depends_on:
+      users_db:
+        condition: service_healthy
+    build:
+      context: users
+      dockerfile: ./Migrator/Dockerfile
+    environment:
+      - CONNECTION_STRING=Server=users_db;Database=users_db;User Id=postgres;Password=postgres;
+
+
+  users-api:
+    image: ${DOCKER_REGISTRY-}users-api
+    container_name: users-api
+    depends_on:
+      - users_db
+      - auth-api
+      - users-migrator
+    build:
+      context: users
+      dockerfile: ./Api/Dockerfile
+    ports:
+      - "5002:80"
+    environment:
+      - "ConnectionStrings:DefaultConnection=Server=users_db;Database=users_db;User Id=postgres;Password=postgres;"
+      - "SecretKey=u[$$y+[&J&8'jz0cd5<QQ~,_n)M3D/X"
+
+  auth-api:
+    image: ${DOCKER_REGISTRY-}auth-api
+    container_name: auth-api
+    depends_on:
+      users-migrator:
+        condition: service_started
+    build:
+      context: auth
+      dockerfile: ./Dockerfile
+    ports:
+      - "5001:80"
+    environment:
+      - "ConnectionStrings:DefaultConnection=Server=users_db;Database=users_db;User Id=postgres;Password=postgres;"
+
+
+
+
+  lots_db:
+    image: postgres
+    container_name: lots_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lots_db
+      - PGUSER=postgres
+
+
+  lots-migrator:
+    image: ${DOCKER_REGISTRY-}lots-migrator
+    container_name: lots-migrator
+    depends_on:
+      lots_db:
+        condition: service_healthy
+    build:
+      context: lots
+      dockerfile: ./Migrator/Dockerfile
+    environment:
+      - CONNECTION_STRING=Server=lots_db;Database=lots_db;User Id=postgres;Password=postgres;
+
+  lots-api:
+    image: ${DOCKER_REGISTRY-}lots-api
+    container_name: lots-api
+    depends_on:
+      lots-migrator:
+        condition: service_started
+    build: 
+      context: lots
+      dockerfile: ./Api/Dockerfile
+    ports:
+      - "5003:80"
+    environment:
+      - "ConnectionStrings:DefaultConnection=Server=lots_db;Database=lots_db;User Id=postgres;Password=postgres;"
+      - "ConnectionStrings:RequisitesUrl=http://users-api:80/api/v1/requisites"
+      - "ConnectionStrings:ApiGateway=http://api-gateway:80"
+      - "SecretKey=u[$$y+[&J&8'jz0cd5<QQ~,_n)M3D/X"
+
+
+  #For crypto and wallet microservices
+  ganache:
+    image: trufflesuite/ganache-cli
+    container_name: ganache
+    command: bash "npm install -g ganache && ganache-cli --host 0.0.0.0"
+    restart: always
+    ports:
+      - "8545:8545"
+
+  crypto_database:
+    image: mongo
+    container_name: crypto_database
+    restart: always
+    ports:
+      - "27017:27017"
+
+  crypto-api:
+    image: ${DOCKER_REGISTRY-}crypto-api
+    container_name: crypto-api
+    build:
+      context: wallets-transfer
+      dockerfile: ./Api.Transfer/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - "DatabaseSettings:ConnectionString=mongodb://crypto_database:27017"
+      - "BlockchainConnections:Ganache=http://ganache:8545"
+    depends_on:
+      - crypto_database
+      - ganache
+      - wallets-api
+    ports:
+      - "5004:80"
+
+  wallets-api:
+    image: ${DOCKER_REGISTRY-}wallets-api
+    container_name: wallets-api
+    env_file:
+      - ./wallets-transfer/Api.Wallets/.env
+    build:
+      context: wallets-transfer
+      dockerfile: ./Api.Wallets/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - "DatabaseSettings:ConnectionString=mongodb://crypto_database:27017"
+      - "BlockchainConnections:Ganache=http://ganache:8545"
+    depends_on:
+      - crypto_database
+      - ganache
+    ports:
+      - "5005:80"
+
+
+
+    
+
+  broker:
+    container_name: broker
+    image: redis
+    ports:
+      - "6379:6379"
+
+  sessions_db:
+    image: postgres
+    container_name: sessions_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sessions_db
+      - PGUSER=postgres
+
+      
+  notifications_db:
+    image: postgres
+    container_name: notifications_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=notifications_db
+      - PGUSER=postgres
+
+  trade-migrator:
+    image: ${DOCKER_REGISTRY-}trade-migrator
+    container_name: trade-migrator
+    depends_on:
+      sessions_db:
+        condition: service_healthy
+    build:
+      context: trade
+      dockerfile: ./Migrator/Dockerfile
+    environment:
+      - CONNECTION_STRING=Server=sessions_db;Database=sessions_db;User Id=postgres;Password=postgres;
+
+
+  trade-api:
+    image: ${DOCKER_REGISTRY-}trade-api
+    container_name: trade-api
+    depends_on:
+      - sessions_db
+      - broker
+      - crypto-api
+      - wallets-api
+      - notifications_db
+    build: 
+      context: trade
+      dockerfile: ./Api/Dockerfile
+    ports:
+      - "5006:80"
+    environment:
+      - "ConnectionStrings:DefaultConnection=Server=sessions_db;Database=sessions_db;User Id=postgres;Password=postgres;"
+      - "ConnectionStrings:HangfireConnection=Server=notifications_db;Database=notifications_db;User Id=postgres;Password=postgres;"
+      - "SessionSettings:TransferUrl=http://crypto-api:80/api/v1/eth/transfer"
+      - "SessionSettings:WalletsUrl=http://wallets-api:80/api/v1/eth/p2p"
+      - "RedisUrl=broker:6379"

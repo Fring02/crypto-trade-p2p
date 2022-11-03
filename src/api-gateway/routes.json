@@ -1,0 +1,288 @@
+﻿{
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5000"
+  },
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/api/register",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/auth/register",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "auth-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/login",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "auth-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/refresh",
+      "UpstreamHttpMethod": ["Patch"],
+      "DownstreamPathTemplate": "/api/auth/refresh",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "auth-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/api/revoke",
+      "UpstreamHttpMethod": ["Delete"],
+      "DownstreamPathTemplate": "/api/auth/revoke",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "auth-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    
+    
+
+    {
+      "UpstreamPathTemplate": "/api/users",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/users",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "users-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/api/users/{id}",
+      "UpstreamHttpMethod": ["Get", "Patch", "Delete"],
+      "DownstreamPathTemplate": "/api/v1/users/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "users-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/api/requisites",
+      "UpstreamHttpMethod": ["Get", "Post"],
+      "DownstreamPathTemplate": "/api/v1/requisites",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "users-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/api/requisites/{id}",
+      "UpstreamHttpMethod": ["Get", "Patch", "Delete"],
+      "DownstreamPathTemplate": "/api/v1/requisites/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "users-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+
+
+    
+    {
+      "UpstreamPathTemplate": "/api/lots",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/lots",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "lots-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/lots",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/v1/lots",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "lots-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/api/lots/{id}",
+      "UpstreamHttpMethod": ["Patch", "Delete"],
+      "DownstreamPathTemplate": "/api/v1/lots/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "lots-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/api/lots/{id}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/lots/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "lots-api",
+        "Port": 80
+      }]
+    },
+
+
+    {
+      "UpstreamPathTemplate": "/api/wallets/create",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/v1/wallets/create",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "wallets-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/wallets/load",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/v1/wallets/load",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "wallets-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/wallets/lock",
+      "UpstreamHttpMethod": ["Patch"],
+      "DownstreamPathTemplate": "/api/v1/wallets/lock",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "wallets-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/wallets/eth/{id}/privateKey",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/wallets/eth/{id}/privateKey",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "wallets-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/wallets/eth/main",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/wallets/eth/main",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "wallets-api",
+        "Port": 80
+      }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/wallets/eth/p2p",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/wallets/eth/p2p",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "wallets-api",
+        "Port": 80
+      }]
+    },
+
+
+
+
+    {
+      "UpstreamPathTemplate": "/sessions",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/sessions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "trade-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/sessions/{id}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/v1/sessions/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "trade-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/sessions",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/v1/sessions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "trade-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/sessions/{id}/cancel",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/v1/sessions/{id}/cancel",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "trade-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/sessions/{id}/complete",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/v1/sessions/{id}/complete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{
+        "Host": "trade-api",
+        "Port": 80
+      }],
+      "UpstreamHeaderTransform": {
+        "Role": "user;admin"
+      }
+    }
+  ]
+}
